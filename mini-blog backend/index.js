@@ -6,7 +6,7 @@ const cors = require("cors")
 const articlesRoute = require("./routes/articles")
 const categoriesRoute = require("./routes/categories")
 
-app.use(cors())
+app.use(cors('*'))
 app.use(express.json())
 app.use(morgan("tiny"))
 

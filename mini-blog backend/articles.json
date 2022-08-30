@@ -1,10 +1,1 @@
-[
-    {
-        "slug":"pizza",
-        "date":"",
-        "author":"Admin",
-        "titre":"Pizza",
-        "description":"Lorem ipsum dolar sit amet",
-        "category":"Food"
-    }
-]
+[{"slug":"pizza","date":"2022","author":"Admin","title":"Pizza","description":"Lorem ipsum dolar sit amet","category":"food"},{"slug":"footbal","date":"2022","author":"Admin","title":"FC Barcelone","description":"Lorem ipsum dolar sit amet","category":"sport"},{"slug":"breaking-news","date":"2022","author":"Admin","title":"Breaking News","description":"Lorem ipsum dolar sit amet","category":"news"},{"author":"Admin","title":"New football article","description":"Lorem ipsum dolar sit amet","category":"sport","slug":"new-football-article","date":"2022-08-30T14:53:21+02:00"},{"author":"Admin","title":"New footbaell article","description":"L","category":"sport","slug":"new-footbaell-article","date":"2022-08-30T14:54:34+02:00"}]

@@ -1,68 +1,80 @@
 const express = require("express")
 const fs = require("fs")
 const app = express()
-const { checkCategory } = require("../middlewares/checkCategory")
-const categoriesList = require("../categories.json")
-const slugify = require("slugify")
+const file = './categories.json'
+const { checkCategory, checkCategoryExists } = require("../middlewares/checkCategory")
 const { body, validationResult } = require("express-validator")
 
-app.get("/", (req, res) => {
-  fs.readFile("./categories.json", (err, data) => {
+app.get('/', (req, res) => {
+  fs.readFile(file, (err, data) => {
     if (err) {
-      res.json(err)
-      return
+      res.status(500).json('Internal server error')
+    } else {
+      const categories = JSON.parse(data.toString())
+      res.json(categories)
     }
-
-    const dataString = data.toString()
-    const dataJson = JSON.parse(dataString)
-    res.json(dataJson)
   })
 })
 
-app.post(
-  "/",
-  body("name")
-    .exists()
-    .withMessage("Enter name")
-    .custom((value) => {
-      const slugified = slugify(value, { lower: true })
-      const checkCategory = categoriesList.find(
-        (category) => category.slug === slugified
+
+app.get('/:slug', checkCategory, (req, res) => {
+  const category = {
+    name: req.category.name,
+    slug: req.category.slug,
+    description: req.category.description,
+    image: req.category.image,
+    articles: []
+  }
+ 
+
+  fs.readFile('./articles.json', (err, data) => {
+    if (err) {
+      res.status(500).json('Internal server error')
+    } else {
+      const articles = JSON.parse(data.toString())
+      const filteredArticles = articles.filter(
+        article => article.category === category.slug
       )
-      return !checkCategory
-    })
-    .withMessage("Name already exists"),
-  body("description")
-    .exists()
-    .withMessage("Enter description")
-    .isLength({ min: 5 })
-    .withMessage("Enter min 5 symboles"),
+      category.articles = filteredArticles
+
+      res.json(category)
+    }
+  })
+})
+
+
+app.post(
+  '/',
+  body('name').isLength({ min: 4 }).withMessage('Category name must be 4 chars minimum'),
+  body('description').isLength({ min: 20 }).withMessage('Category description must be 20 chars minimum'), 
+  body('image').exists().withMessage('image is required').isURL().withMessage('image URL is required'), checkCategoryExists,
   (req, res) => {
     const { errors } = validationResult(req)
+    console.log(errors)
 
-    if (errors.length > 0) {
+    if (errors) {
       res.status(400).json(errors)
-    } else {
-      const category = {
-        ...req.body,
-        slug: slugify(req.body.name, { lower: true }),
-      }
-
-      fs.readFile("./categories.json", (err, data) => {
-        if (err) {
-          res.json(err)
-          return
-        }
-
-        const categories = JSON.parse(data.toString())
-        categories.push(category)
-
-        fs.writeFile("./categories.json", JSON.stringify(categories), (err) => {
-          res.json(err)
-        })
-      })
+      return
     }
-    res.json("New category added")
+
+    const category = {
+      name: req.body.name,
+      description: req.body.description,
+      image: req.body.image,
+      slug: req.categorySlug
+    }
+
+    console.log(categories)
+    const categories = [...req.categories, category]
+    console.log(categories)
+
+    fs.writeFile(file, JSON.stringify(categories), err => {
+      if (err) {
+        res.status(500).json('Internal server error')
+      } else {
+        res.json(category)
+      }
+    })
   }
 )
 

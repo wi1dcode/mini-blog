@@ -1,16 +1,49 @@
-const categoriesTable = require("../categories.json")
+const fs = require('fs')
+const slugify = require("slugify")
+const file = './categories.json'
 
 const checkCategory = (req, res, next) => {
-  const category = categoriesTable.find(
-    (category) => category.slug === req.params.slug
-  )
+  const { slug } = req.params
 
-  if (category) {
-    req.category = category
-    next()
-  } else {
-    res.status(404).json("Category doesn't exists")
-  }
+  fs.readFile(file, (err, data) => {
+    if (err) {
+      res.status(500).json('Internal server error')
+    } else {
+      const categories = JSON.parse(data.toString())
+      const category = categories.find(category => category.slug === slug)
+
+      if (category) {
+        req.category = category
+        next()
+      } else {
+        res.status(404).json('Category not found')
+      }
+    }
+  })
 }
 
-module.exports = { checkCategory }
+const checkCategoryExists = (req, res, next) => {
+  const slug = slugify(req.body.name, { lower: true })
+
+  fs.readFile(file, (err, data) => {
+    if (err) {
+      res.status(500).json('Internal server error')
+    } else {
+      const categories = JSON.parse(data.toString())
+      const category = categories.find(category => category.slug === slug)
+
+      if (!category) {
+        req.categorySlug = slug
+        req.categories = categories
+        next()
+      } else {
+        res.status(409).json('Category already exists')
+      }
+    }
+  })
+}
+
+module.exports = {
+  checkCategory,
+  checkCategoryExists
+}
